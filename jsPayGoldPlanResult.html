@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=, initial-scale=1.0">
+    <title>支付结果页</title>
+    <script type="text/javascript" charset="UTF-8"
+        src="https://wx.gtimg.com/pay_h5/goldplan/js/jgoldplan-1.0.0.js"></script>
+    <script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://res.wx.qq.com/open/libs/weui/2.4.4/weui.min.css">
+    </link>
+</head>
+
+<body data-weui-theme="light">
+    <div class="weui-msg" id="success-result">
+        <div class="weui-msg__icon-area" style="margin-bottom: 28px;"><i class="weui-icon-success weui-icon_msg"></i>
+        </div>
+        <div class="weui-msg__text-area" style="margin-bottom: 24px;">
+            <h2 class="weui-msg__title">支付成功</h2>
+            <p class="weui-msg__desc">支付金额： ￥
+                <?php echo $totalAmount; ?>元
+            </p>
+        </div>
+        <div class="weui-msg__opr-area">
+            <p class="weui-btn-area">
+                <a id="go_order_btn" class="weui-btn weui-btn_primary">查看订单</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="weui-msg" id="fail-result" style="display: none;">
+        <div class="weui-msg__icon-area" style="margin-bottom: 28px;"><i class="weui-icon-warn weui-icon_msg"></i></div>
+        <div class="weui-msg__text-area" style="margin-bottom: 24px;">
+            <h2 class="weui-msg__title">支付失败</h2>
+            <p class="weui-msg__desc">支付金额： ￥
+                <?php echo $totalAmount; ?>元
+            </p>
+        </div>
+        <div class="weui-msg__opr-area">
+            <p class="weui-btn-area">
+                <a id="go_order_btn" class="weui-btn weui-btn_primary">查看订单</a>
+            </p>
+        </div>
+    </div>
+
+
+    <script>
+        const status = "<?php echo $is_success; ?>";
+        if (!status) {
+            $("#success-result").hide();
+            $("#fail-result").show();
+        }
+
+        function callParent(data) {
+            let postData = JSON.stringify(data)
+            parent.postMessage(postData, 'https://payapp.weixin.qq.com')
+        }
+
+        function jumpToOrderDetail() {
+            const jumpUrl = "<?php echo $jumpUrl; ?>";
+            if (status) {
+                let mchData = { action: 'jumpOut', jumpOutUrl: jumpUrl }
+                callParent(mchData);
+            } else {
+                location.href = jumpUrl;
+            }
+        }
+
+        function cb() {
+            const customPageHeight = document.body.scrollHeight;
+            const height = customPageHeight * (640 / Math.round(document.documentElement.getBoundingClientRect().width));
+            let mchData = { action: 'onIframeReady', displayStyle: 'SHOW_CUSTOM_PAGE', height: height }
+            callParent(mchData);
+        }
+        $(document.body).on("click", "#go_order_btn", jumpToOrderDetail);
+        window.addEventListener("DOMContentLoaded", cb);
+    </script>
+</body>
+
+</html>
